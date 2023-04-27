@@ -1,0 +1,27 @@
+version: 1
+formatters:
+  brief:
+    format: '%(asctime)s %(levelname)-8s %(name)-15s %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+  default:
+    format: '%(asctime)s %(levelname)-8s %(name)-15s %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+  precise:
+    format: '%(asctime)s  %(threadName)s %(processName)s %(levelname)-7s %(name)s %(filename)s:%(lineno)s %(funcName)s() :: %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: precise
+    stream: ext://sys.stdout
+  file:
+    class : logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: precise
+    filename: /logs/hqrTestBot.log
+loggers:
+  hqrBotLogger:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: true
