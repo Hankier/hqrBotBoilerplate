@@ -28,15 +28,7 @@ headers = {
 
 DC_TOKEN = os.environ['HQR_DC_TOKEN']
 
-intents = discord.Intents(
-    message_content=True,
-    reactions=True,
-    messages=True,
-    members=True,
-    guilds=True,
-    emojis=True,
-    bans=True
-)
+intents = discord.Intents.all()
 
 
 async def startup():
