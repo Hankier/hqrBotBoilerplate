@@ -8,7 +8,6 @@ import utils
 
 from discord import Message, User
 from discord.ext import commands, menus
-#from .config import Config
 from sqlalchemy import create_engine
 
 from typing import Union, Optional, Dict, List
@@ -37,25 +36,23 @@ class CustomBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        #self.config = Config()
         self.cogs_list: List[str] = []
         self.fully_ready = False
         self.session = None
         self.synced = True
-        self.config = kwargs.get('config')
-        self.using_db = kwargs.get('using_db')
-        if self.using_db:
-            logger.debug('Loading DB...')
-            self.db = self._db_init()
+        config_file = kwargs.get('config_file', 'config_test.json')
+        self.config = utils.Config().load_json(config_file)
+        logger.debug('Config loaded %s', self.config)
 
-    def _db_init(self):
-        DB_NAME = os.environ.get('SHARE_SHARKS_DB_NAME')
-        DB_USER = os.environ.get('SHARE_SHARKS_DB_USER')
-        DB_PASS = os.environ.get('SHARE_SHARKS_DB_PASS')
-        DB_HOST = os.environ.get('SHARE_SHARKS_DB_HOST')
-        DB_PORT = os.environ.get('SHARE_SHARKS_DB_PORT')
-        db = create_engine(f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
-        return db
+    @staticmethod
+    def get_custom_prefix(_bot: 'CustomBot', message: discord.Message):
+        logger.debug('Getting prefix for message')
+        default_prefixes = ['!', 'hqr.', 'hqr ']
+
+        if _bot.config.prefixes:
+            return commands.when_mentioned_or(*_bot.config.prefixes)(_bot, message)
+        else:
+            return commands.when_mentioned_or(*default_prefixes)(_bot, message)
 
     async def setup_hook(self):
         self.loop.create_task(self.startup())
@@ -74,7 +71,9 @@ class CustomBot(commands.Bot):
             self.synced = True
 
     async def on_message(self, message: Message):
+        logger.debug('On message invoked')
         if not self.fully_ready:
+            logger.debug('Bot is not fully ready. Waiting for fully_ready event...')
             await self.wait_for('fully_ready')
 
         if message.author.bot:
@@ -84,7 +83,7 @@ class CustomBot(commands.Bot):
             logger.debug('Ignoring DM message.')
             return
         elif message.guild.id == self.config.guild:
-            logger.debug(f'On message: {message}')
+            logger.debug('On message')
             await self.process_commands(message)
         else:
             logger.debug('Ignoring message from other guild. %s(%s)', message.guild, message.guild.id)

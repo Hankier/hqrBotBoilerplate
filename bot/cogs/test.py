@@ -11,7 +11,6 @@ class TestCog(commands.Cog, name='Test'):
     def __init__(self, bot: utils.CustomBot):
         self.bot: utils.CustomBot = bot
 
-    @commands.is_owner()
     @commands.command(name='test')
     async def test(self, ctx: utils.CustomContext) -> None:
         logger.debug(f'Test called by {ctx.author} in {ctx.channel}')
@@ -23,4 +22,3 @@ async def setup(bot):
     logger.info('Setup TestCog :: Start')
     await bot.add_cog(TestCog(bot))
     logger.info('Setup TestCog :: End')
-

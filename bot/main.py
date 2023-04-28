@@ -4,10 +4,9 @@ import aiohttp
 import utils
 import logging
 import logging.config
-import yaml
 import os
+import yaml
 
-from discord.ext import commands
 
 
 with open('logging_config.yaml', 'r') as f:
@@ -23,34 +22,37 @@ cogs = [
 
 
 headers = {
-    'User-Agent':'hqrTestBot#0573 "A Discord bot"'
+    'User-Agent': 'hqrTestBot#0573 "A Discord bot"'
 }
 
 DC_TOKEN = os.environ['HQR_DC_TOKEN']
 
-intents = discord.Intents.all()
+intents = discord.Intents(
+    message_content=True,
+    reactions=True,
+    messages=True,
+    members=True,
+    guilds=True,
+    emojis=True,
+    bans=True
+)
 
 
 async def startup():
-    config = utils.Config().load_json('config_test.json')
-    default_prefixes = ['!', 'hqr.', 'hqr ']
     logger.info('Starting bot...')
     bot = utils.CustomBot(
         activity=discord.Activity(type=discord.ActivityType.watching, name="hqr.sh"),
         allowed_mentions=discord.AllowedMentions(replied_user=False),
-        command_prefix=commands.when_mentioned_or(default_prefixes),
+        command_prefix=utils.CustomBot.get_custom_prefix,
         strip_after_prefix=True,
         case_insensitive=True,
         max_messages=20000,
         intents=intents,
-        config=config,
-        owner_ids = set(config.admins),
+        config_file='config_test.json'
     )
-    logger.debug('Token: %s' % DC_TOKEN)
 
     bot.cogs_list = cogs
     for cog in cogs:
-        logger.info(f'Loading cog: {cog}')
         await bot.load_extension(cog)
 
     async with aiohttp.ClientSession(headers=headers) as session:
